@@ -1,0 +1,83 @@
+(function () {
+  console.log("[Cleaner] Đang chờ các phần tử xuất hiện...");
+
+  const waitFor = (selector, callback) => {
+    const timer = setInterval(() => {
+      const el = document.querySelector(selector);
+      if (el) {
+        clearInterval(timer);
+        callback(el);
+      }
+    }, 500);
+  };
+
+  // 1️⃣ Dọn rác quảng cáo
+  const clean = () => {
+    const target1 = document.querySelector("#captcha-html-wrapper");
+    const target2 = document.querySelector("#advertise-html-wrapper");
+    const timeout = document.querySelector(".time-out-alert");
+    const modal = document.querySelector("#modal-report");
+
+    if (target1 || target2 || timeout || modal) {
+      $("#captcha-html-wrapper").empty();
+      $("#advertise-html-wrapper").empty();
+      $(".time-out-alert").parent().remove();
+      $("#modal-report").remove();
+      console.log("[Cleaner] Đã xóa xong!");
+    }
+  };
+
+  // 2️⃣ Hàm tạo recaptcha mặc định
+  function createDefaultRecaptcha() {
+    const wrapper = $("#captcha-html-wrapper");
+    if (!wrapper.length) {
+      console.warn("[Recaptcha] Không tìm thấy #captcha-html-wrapper — đợi thêm...");
+      return;
+    }
+
+    const alias = wrapper.data("alias") || "";
+
+    const header = $("<h4>").html("Vui lòng check captcha để tiếp tục tới trang đích<br><a href='https://guns.lol/hai1723'>bio của chủ bypass</a>");
+
+    const container = $("<div>").css("margin-bottom", "10px");
+    const form = $("<form>", { id: "main-form", method: "post" });
+    const recaptchaDiv = $("<div>", {
+      id: "recaptcha",
+      class: "g-recaptcha",
+      "data-callback": "recaptcha_callback",
+    });
+    const input = $("<input>", { type: "hidden", id: "alias", name: "alias" }).val(alias);
+    const formGroup = $("<div>", { class: "form-group" });
+    const button = $("<a>", {
+      class: "btn btn-success disabled get-link",
+      target: "_blank",
+      rel: "noopener noreferrer nofollow",
+    }).html("Click vào đây để tiếp tục");
+
+    formGroup.append(button);
+    form.append(recaptchaDiv, input, formGroup);
+    container.append(form);
+    wrapper.append(header, container);
+    wrapper.find(".loader").remove();
+    $("#advertise-html-wrapper").remove();
+
+    // Đảm bảo grecaptcha có sẵn
+    const initRecaptcha = () => {
+      if (typeof grecaptcha !== "undefined" && typeof recaptcha_key !== "undefined") {
+        const id = grecaptcha.render("recaptcha", { sitekey: recaptcha_key });
+        recaptchaDiv.data("recaptcha-id", id);
+      } else {
+        setTimeout(initRecaptcha, 1000);
+      }
+    };
+    initRecaptcha();
+  }
+
+  clean();
+  createDefaultRecaptcha();
+  // waitFor("#captcha-html-wrapper", () => {
+  //  clean();
+  //  createDefaultRecaptcha();
+  // });
+
+})();
